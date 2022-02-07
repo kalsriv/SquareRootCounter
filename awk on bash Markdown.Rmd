@@ -1,0 +1,106 @@
+---
+title: "AWK command to query and create data frames"
+author: "Kalyan Srivastava"
+date: "2/5/2022"
+output: html_document
+---
+```{bash}
+cd  ~; cd Documents 
+#Need to do this ritual each time you initiate a new chuck
+#RStudio defaults itself to the home directory when you start a new chunk
+pwd; #ls #Listt everything in this directory
+cat vgsales.csv
+#bash command line reads the csv file and prints without tab or comma separation. But you get to see what is there. 
+```
+```{bash}
+cd  ~
+cd Documents; head vgsales.csv
+#On linux use libre office calc to open this file. Press OK when it asks you to open at tab limited file
+#Next we are going to work with awk. Install awk on your linux box if not available from inception
+#Select the rows that have 'Wanadoo' as production company and create a new csv file called New_Data.csv
+awk '/Wanadoo/{print}' vgsales.csv > New_Data.csv
+#Read the column names of vgsales.csv
+awk 'NR==1{print $1}' vgsales.csv
+#Total number of rows
+awk 'END{print FNR}' vgsales.csv
+
+```
+```{bash}
+cd  ~
+cd Documents; head New_Data.csv
+#Note that the csv generated in this way does not have column name
+#Therefore we would first create a csv file that only has the column names
+rm New_Data.csv # Delete New_Data.csv we created above
+head -1 vgsales.csv > New_Data.csv
+#Append the output to the New_Data.csv using '>>'. if you used '>' only it would overwrite the file
+awk '/Wanadoo/{print}' vgsales.csv >> New_Data.csv
+#Finally open the csv file using your preferred program
+libreoffice --calc New_Data.csv
+```
+```{bash}
+cd  ~
+cd Documents; head New_Data.csv
+
+#Let us query other comapnies an add into this 
+awk '/Nintendo/{print}' vgsales.csv >> New_Data.csv 
+#Let us add few morerows
+awk '/TrackMania/{print}' vgsales.csv >> New_Data.csv 
+```
+```{bash}
+cd  ~
+cd Documents; head New_Data.csv
+#Query anything that has Micro in any of the cells and create a csv file
+awk '/Micro/{ print $0 }' vgsales.csv > MicroRecords.csv
+#Let us look for Tetris in 2nd (games name) row
+awk -F, '$2 ~ /Tetris/' vgsales.csv > Tetris.csv
+#In the example above we can truncate the noun Tetris to Tetr and see what results we get
+awk -F, '$2 ~ /Tetr/' vgsales.csv > Tetris.csv #It is same result
+```
+```{bash}
+cd  ~
+cd Documents; head New_Data.csv
+
+#When we want to exclude one entry from a query, it is best to suggest the column that we want to enquire
+awk '$6~ !/Nintendo /' vgsales.csv > Test1.csv
+#When you want to remove both Nintendo and Microsoft, try piping
+awk '$6~ !/Nintendo /' vgsales.csv | awk '$6~ !/Micro /' > Test1.csv
+#To get the results in rows
+awk -F '[:,]' '{print $6}' vgsales.csv | awk /'Micro'/
+
+```
+```{bash}
+cd  ~
+cd Documents; head New_Data.csv
+#Note that Publisher is the sixth column. Let us read only this column
+awk -F '[:,]' '{print $6}' vgsales.csv
+#Let us use grep to find the microsoft in developer column
+awk '{print $6}' vgsales.csv | grep 'Microsoft'
+```
+```{bash}
+cd  ~
+cd Documents; head New_Data.csv
+#Let us add this into our product csv file
+awk '/Microsoft/{print}' vgsales.csv >> New_Data.csv 
+```
+```{bash}
+cd  ~
+cd Documents; head New_Data.csv
+#You can use the awk to query any column of your csv. In this example we would query top 100 games by ranking. We would export the outcome to a new scsv file called test1.csv. The Ranking column is $1 which we would query in this command.
+awk -F'[:,]' -v limit=100 '$1 <= limit' vgsales.csv > test1.csv
+#Want to query top 100 that were published by Sony?
+awk -F'[:,]' -v limit=100 '$1 <= limit' vgsales.csv | awk '$6~ !/Sony/' > test1.csv
+# Next we would check top 100 games that have global sales more than 20.
+awk -F'[:,]' -v limit=100 '$1 <= limit && $11 >=20' vgsales.csv > test1.csv
+```
+```{bash}
+cd  ~
+cd Documents; head New_Data.csv
+
+#In order to sort based on a certain column we need to use the sort command from bash
+#awk -F'[:,]' -v limit=100 '$1 <= limit' vgsales.csv > Test2.txt #Sorting by 5th column name
+awk '/Atari/{print}' vgsales.csv > Test2.txt 
+sort -t: -k5 Test2.txt > Test3.csv
+```
+
+
+
